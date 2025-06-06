@@ -7,14 +7,12 @@ using UnityEngine.InputSystem;
 
 namespace FF5PR.OriginalATB;
 
-public sealed class ModComponent : MonoBehaviour
+public sealed class ModComponent(IntPtr ptr) : MonoBehaviour(ptr)
 {
     public static ModComponent Instance { get; private set; }
     private bool _isDisabled;
 
     public BattleDelayState CurrentBattleDelayState = new();
-
-    public ModComponent(IntPtr ptr) : base(ptr) { }
 
     public static bool Inject()
     {
@@ -55,21 +53,5 @@ public sealed class ModComponent : MonoBehaviour
         }
     }
 
-    //public void LateUpdate()
-    //{
-    //    try
-    //    {
-    //        if (_isDisabled)
-    //        {
-    //            return;
-    //        }
-
-    //    }
-    //    catch (Exception e)
-    //    {
-    //        _isDisabled = true;
-    //        Plugin.Log.LogError($"[{nameof(ModComponent)}].{nameof(LateUpdate)}(): {e}");
-    //    }
-    //}
 
 }

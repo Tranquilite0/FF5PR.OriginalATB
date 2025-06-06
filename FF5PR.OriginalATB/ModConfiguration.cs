@@ -33,6 +33,20 @@ public sealed class ModConfiguration
 
     public void Init()
     {
+        ATBFormula = _config.Bind(
+             "ATB",
+             nameof(ATBFormula),
+             OriginalATB.ATBFormula.Original,
+             "Choose which ATB Formula to use."
+        );
+
+        AdvanceFirstTurn = _config.Bind(
+             "ATB",
+             nameof(AdvanceFirstTurn),
+             true,
+             "Automatically Advance ATB at the start of battle to the first turn."
+        );
+
         DelayAtTurnStart = _config.Bind(
              "Delay Time",
              nameof(DelayAtTurnStart),
