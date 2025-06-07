@@ -8,7 +8,7 @@ public enum ATBFormula
     [Description("Original (Haste/Slow part of min ATB)")]
     Original = 0,
     [Description("Original (Haste/Slow part of ATB fill rate)")]
-    OriginalNoHaste,
+    OriginalFillRate,
     [Description("Pixel Remaster")]
     PixelRemaster,
 }
@@ -37,7 +37,12 @@ public sealed class ModConfiguration
              "ATB",
              nameof(ATBFormula),
              OriginalATB.ATBFormula.Original,
-             "Choose which ATB Formula to use."
+             $"""
+             Choose which ATB Formula to use:
+              - {FF5PR.OriginalATB.ATBFormula.Original}: Haste/Slow baked into minimum ATB
+              - {FF5PR.OriginalATB.ATBFormula.OriginalFillRate}: Haste/Slow part of ATB fill rate
+              - {FF5PR.OriginalATB.ATBFormula.PixelRemaster}: Unchanged ATB formula
+             """
         );
 
         AdvanceFirstTurn = _config.Bind(

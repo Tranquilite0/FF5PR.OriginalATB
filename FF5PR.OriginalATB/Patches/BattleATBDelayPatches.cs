@@ -12,7 +12,7 @@ public static class BattleATBDelayPatches
 {
     [HarmonyPatch(typeof(BattleInfomationController), nameof(BattleInfomationController.NonInit))]
     [HarmonyPostfix]
-    static void SetTurnEnded()
+    static void SetTurnEndedOnBattleIdle()
     {
         //Plugin.Log.LogInfo($"  End: {typeof(BattleInfomationController).FullName}.{nameof(BattleInfomationController.NonInit)}");
 

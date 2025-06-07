@@ -28,7 +28,7 @@ namespace FF5PR.OriginalATB
             //As far as I know, this is always 0.5 when slow 2.0 when hasted and 1.0 otherwise.
             var timeMagnification = Plugin.Config.ATBFormula.Value == ATBFormula.Original ? battleUnitData.timeMagnification : 1f;
 
-            Plugin.Log.LogInfo($"MinATB Inputs: agi={agi}, weight={weight}, mult={timeMagnification}");
+            //Plugin.Log.LogInfo($"MinATB Inputs: agi={agi}, weight={weight}, mult={timeMagnification}");
 
             //The original ATB formula calculates integer values in the range of 1-255 (lower is fuller ATB).
             //We need to invert the range so that higher is fuller and rescale the range to BattleProgressATB.MaxATBGauge.
@@ -52,6 +52,9 @@ namespace FF5PR.OriginalATB
             //Rescale shifted original ATB range (1 +/- to 127) to match PR (1 +- 100).
             var atbMinFloat = atbMinInt * BattleProgressATB.MaxATBGauge / (ATBMaxOriginal / 2);
             //Plugin.Log.LogInfo($"MinATB Rescaled: {atbMinFloat:F2}");
+
+            //Hack to avoid trigging ATB reset after conditions
+            atbMinFloat = atbMinFloat == 0f ? 0.01f : atbMinFloat;
 
             return atbMinFloat;
         }
@@ -84,7 +87,7 @@ namespace FF5PR.OriginalATB
         public static void AdvanceToNextTurn(this BattleProgressATB battleProgressATB)
         {
             bool applyTimeMag = Plugin.Config.ATBFormula.Value != ATBFormula.Original;
-            var atbToNextTurn = battleProgressATB.ATBToNextTurn(applyTimeMag);
+            var atbToNextTurn = battleProgressATB.CalcATBToNextTurn(applyTimeMag);
 
             //Dont advance if anyone's turn is already up.
             if(atbToNextTurn <= 0)
@@ -99,7 +102,7 @@ namespace FF5PR.OriginalATB
                 {
                     battleProgressATB.ChangeATBGaugeByUnitData(unitData, guageValue + atbToNextTurn);
                 }
-                Plugin.Log.LogInfo($"AdvanceToNextTurn incremented all ATBs by {atbToNextTurn}.");
+                //Plugin.Log.LogInfo($"AdvanceToNextTurn incremented all ATBs by {atbToNextTurn}.");
             }
             //Since I havent properly reverse engineered the PR CalcATB formula, I have to simulate it with iterative calls to CalcATB until a unit gets their turn.
             //but don't run the iteration if deltaTime is zero or we will enter an infinite loop.
@@ -109,11 +112,10 @@ namespace FF5PR.OriginalATB
                 //Set an upper bound on the number of iteration in case something unexpected happens and ATBs are not being incremented.
                 int loopCount = 0;
 
-                for (; advancingATB || loopCount < 1000; loopCount++ )
+                for (; advancingATB && loopCount < 1000; loopCount++ )
                 {
                     foreach ((var unitData, var guageValue) in battleProgressATB.gaugeStatusDictionary.ToManaged())
                     {
-                        //TODO: Determine if ATBCalc() accounts for stopped or paralyzed units properly?
                         var newValue = guageValue + battleProgressATB.ATBCalc(unitData);
                         battleProgressATB.ChangeATBGaugeByUnitData(unitData, newValue);
 
@@ -125,8 +127,13 @@ namespace FF5PR.OriginalATB
                 }
                 Plugin.Log.LogInfo($"AdvanceToNextTurn Completed in {loopCount} iterations.");
             }
+            else if (Time.deltaTime <= 0f)
+            {
+                Plugin.Log.LogInfo($"AdvanceToNextTurn cannot advance because deltaTime={Time.deltaTime}");
+            }
 
-                
+
+
         }
 
         /// <summary>
@@ -136,7 +143,7 @@ namespace FF5PR.OriginalATB
         /// <param name="battleProgressATB"></param>
         /// <param name="applyTimeMagnification"></param>
         /// <returns></returns>
-        public static float ATBToNextTurn(this BattleProgressATB battleProgressATB, bool applyTimeMagnification)
+        public static float CalcATBToNextTurn(this BattleProgressATB battleProgressATB, bool applyTimeMagnification)
         {
             var minAdvanceDelta = BattleProgressATB.MaxATBGauge;
 
@@ -158,6 +165,14 @@ namespace FF5PR.OriginalATB
             return minAdvanceDelta;
         }
 
+
+
+        /// <summary>
+        /// Fetches the Units name. Should work as long as <paramref name="unitData"/> has a non-null result for
+        /// <see cref="BattleUnitData.GetOwnedCharacterData"/> or <see cref="BattleUnitData.GetMonster"/>.
+        /// </summary>
+        /// <param name="unitData"></param>
+        /// <returns></returns>
         public static string GetUnitName(this BattleUnitData unitData)
         {
             //Check if player character

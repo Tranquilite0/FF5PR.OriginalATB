@@ -27,35 +27,35 @@ namespace FF5PR.OriginalATB.Patches
         //    Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleProgressATBFF0.Init)}");
         //}
 
-        [HarmonyPatch(typeof(BattleProgressATBFF0), nameof(BattleProgressATBFF0.ATBCalc))]
-        [HarmonyPrefix]
-        static void ATBCalcPre(BattleProgressATBFF0 __instance, BattleUnitData __0)
-        {
-            Plugin.Log.LogInfo($"Begin: {__instance.GetType().FullName}.{nameof(BattleProgressATBFF0.ATBCalc)}({__0.GetUnitName()})");
-        }
+        //[HarmonyPatch(typeof(BattleProgressATBFF0), nameof(BattleProgressATBFF0.ATBCalc))]
+        //[HarmonyPrefix]
+        //static void ATBCalcPre(BattleProgressATBFF0 __instance, BattleUnitData __0)
+        //{
+        //    Plugin.Log.LogInfo($"Begin: {__instance.GetType().FullName}.{nameof(BattleProgressATBFF0.ATBCalc)}({__0.GetUnitName()})");
+        //}
 
-        [HarmonyPatch(typeof(BattleProgressATBFF0), nameof(BattleProgressATBFF0.ATBCalc))]
-        [HarmonyPostfix]
-        static void ATBCalcPost(BattleProgressATBFF0 __instance, ref float __result, BattleUnitData __0)
-        {
-            Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleProgressATBFF0.ATBCalc)}({__0.GetUnitName()})->{__result:F2}");
-        }
+        //[HarmonyPatch(typeof(BattleProgressATBFF0), nameof(BattleProgressATBFF0.ATBCalc))]
+        //[HarmonyPostfix]
+        //static void ATBCalcPost(BattleProgressATBFF0 __instance, ref float __result, BattleUnitData __0)
+        //{
+        //    Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleProgressATBFF0.ATBCalc)}({__0.GetUnitName()})->{__result:F2}");
+        //}
 
 
-        //------- BattleProgressATB -------
-        [HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.ActExectionEndDelegate))]
-        [HarmonyPrefix]
-        static void ActExectionEndDelegatePrefix(BattleProgressATB __instance, BattleUnitData __0)
-        {
-            Plugin.Log.LogInfo($"Begin: {__instance.GetType().FullName}.{nameof(BattleProgressATB.ActExectionEndDelegate)}({__0.GetUnitName()})");
-        }
+        ////------- BattleProgressATB -------
+        //[HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.ActExectionEndDelegate))]
+        //[HarmonyPrefix]
+        //static void ActExectionEndDelegatePrefix(BattleProgressATB __instance, BattleUnitData __0)
+        //{
+        //    Plugin.Log.LogInfo($"Begin: {__instance.GetType().FullName}.{nameof(BattleProgressATB.ActExectionEndDelegate)}({__0.GetUnitName()})");
+        //}
 
-        [HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.ActExectionEndDelegate))]
-        [HarmonyPostfix]
-        static void ActExectionEndDelegatePostfix(BattleProgressATB __instance, BattleUnitData __0)
-        {
-            Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleProgressATB.ActExectionEndDelegate)}({__0.GetUnitName()})");
-        }
+        //[HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.ActExectionEndDelegate))]
+        //[HarmonyPostfix]
+        //static void ActExectionEndDelegatePostfix(BattleProgressATB __instance, BattleUnitData __0)
+        //{
+        //    Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleProgressATB.ActExectionEndDelegate)}({__0.GetUnitName()})");
+        //}
 
         //[HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.SetPreeMptive))]
         //[HarmonyPrefix]
@@ -127,19 +127,19 @@ namespace FF5PR.OriginalATB.Patches
         //    Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleProgressATB.UpdateUnableFight)}");
         //}
 
-        [HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.UpdateGaugeIncrease))]
-        [HarmonyPrefix]
-        static void UpdateGaugeIncreasePre(BattleProgressATB __instance)
-        {
-            Plugin.Log.LogInfo($"Begin: {__instance.GetType().FullName}.{nameof(BattleProgressATB.UpdateGaugeIncrease)}");
-        }
+        //[HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.UpdateGaugeIncrease))]
+        //[HarmonyPrefix]
+        //static void UpdateGaugeIncreasePre(BattleProgressATB __instance)
+        //{
+        //    Plugin.Log.LogInfo($"Begin: {__instance.GetType().FullName}.{nameof(BattleProgressATB.UpdateGaugeIncrease)}");
+        //}
 
-        [HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.UpdateGaugeIncrease))]
-        [HarmonyPostfix]
-        static void UpdateGaugeIncreasePost(BattleProgressATB __instance)
-        {
-            Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleProgressATB.UpdateGaugeIncrease)}");
-        }
+        //[HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.UpdateGaugeIncrease))]
+        //[HarmonyPostfix]
+        //static void UpdateGaugeIncreasePost(BattleProgressATB __instance)
+        //{
+        //    Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleProgressATB.UpdateGaugeIncrease)}");
+        //}
 
         //[HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.UpdateChantTime))]
         //[HarmonyPrefix]
@@ -295,12 +295,12 @@ namespace FF5PR.OriginalATB.Patches
         //    Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleProgressATB.SetNextTurn)}({__0.GetUnitName()}");
         //}
 
-        ////------- BattleUnitData -------
+        //------- BattleUnitData -------
         //[HarmonyPatch(typeof(BattleUnitData), nameof(BattleUnitData.SetTimeMagnification))]
         //[HarmonyPrefix]
         //static void ChangeATBGaugeByUnitDataPre(BattleUnitData __instance, float __0)
         //{
-        //    Plugin.Log.LogInfo($"Begin: {__instance.GetType().FullName}({__instance.UnitName()}).{nameof(BattleUnitData.SetTimeMagnification)}({__0:f2})");
+        //    Plugin.Log.LogInfo($"Begin: {__instance.GetType().FullName}({__instance.GetUnitName()}).{nameof(BattleUnitData.SetTimeMagnification)}({__0:f2})");
         //}
 
         //[HarmonyPatch(typeof(BattleUnitData), nameof(BattleUnitData.SetTimeMagnification))]
@@ -484,21 +484,69 @@ namespace FF5PR.OriginalATB.Patches
         //    Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleConditionController.EquipmentUpdate)}");
         //}
 
-        ////[HarmonyPatch(typeof(BattleConditionController), nameof(BattleConditionController.CheckConditionFunction))]
-        ////[HarmonyPrefix]
-        ////static void CheckConditionFunctionPrefix(BattleConditionController __instance, BattleUnitData __0)
-        ////{
-        ////    Plugin.Log.LogInfo($"Begin: {__instance.GetType().FullName}.{nameof(BattleConditionController.CheckConditionFunction)}({__0.GetUnitName()})");
-        ////}
+        //[HarmonyPatch(typeof(BattleConditionController), nameof(BattleConditionController.CheckConditionFunction))]
+        //[HarmonyPrefix]
+        //static void CheckConditionFunctionPrefix(BattleConditionController __instance, BattleUnitData __0)
+        //{
+        //    Plugin.Log.LogInfo($"Begin: {__instance.GetType().FullName}.{nameof(BattleConditionController.CheckConditionFunction)}({__0.GetUnitName()})");
+        //}
 
-        ////[HarmonyPatch(typeof(BattleConditionController), nameof(BattleConditionController.CheckConditionFunction))]
-        ////[HarmonyPostfix]
-        ////static void CheckConditionFunctionPostfix(BattleConditionController __instance, BattleUnitData __0)
-        ////{
-        ////    Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleConditionController.CheckConditionFunction)}({__0.GetUnitName()})");
-        ////}
+        //[HarmonyPatch(typeof(BattleConditionController), nameof(BattleConditionController.CheckConditionFunction))]
+        //[HarmonyPostfix]
+        //static void CheckConditionFunctionPostfix(BattleConditionController __instance, BattleUnitData __0)
+        //{
+        //    Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleConditionController.CheckConditionFunction)}({__0.GetUnitName()})");
+        //}
 
-        ////------- BattleConditionController -------
+        //[HarmonyPatch(typeof(BattleConditionController), nameof(BattleConditionController.Add))]
+        //[HarmonyPrefix]
+        //static void AddPrefix(BattleConditionController __instance, BattleUnitData __0, int __1, bool __2)
+        //{
+        //    var cond = (Last.Defaine.ConditionType)__1;
+        //    Plugin.Log.LogInfo($"Begin: {__instance.GetType().FullName}.{nameof(BattleConditionController.Add)}({__0.GetUnitName()}, {cond}, {__2})");
+        //}
+
+        //[HarmonyPatch(typeof(BattleConditionController), nameof(BattleConditionController.Add))]
+        //[HarmonyPostfix]
+        //static void AddPostfix(BattleConditionController __instance, BattleUnitData __0, int __1, bool __2)
+        //{
+        //    var cond = (Last.Defaine.ConditionType)__1;
+        //    Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleConditionController.Add)}({__0.GetUnitName()}, {cond}, {__2})");
+        //}
+
+        //[HarmonyPatch(typeof(BattleConditionController), nameof(BattleConditionController.Remove))]
+        //[HarmonyPrefix]
+        //static void RemovePrefix(BattleConditionController __instance, BattleUnitData __0, int __1, bool __2)
+        //{
+        //    var cond = (Last.Defaine.ConditionType)__1;
+        //    Plugin.Log.LogInfo($"Begin: {__instance.GetType().FullName}.{nameof(BattleConditionController.Remove)}({__0.GetUnitName()}, {cond}, {__2})");
+        //}
+
+        //[HarmonyPatch(typeof(BattleConditionController), nameof(BattleConditionController.Remove))]
+        //[HarmonyPostfix]
+        //static void RemovePostfix(BattleConditionController __instance, BattleUnitData __0, int __1, bool __2)
+        //{
+        //    var cond = (Last.Defaine.ConditionType)__1;
+        //    Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleConditionController.Remove)}({__0.GetUnitName()}, {cond}, {__2})");
+        //}
+
+        //[HarmonyPatch(typeof(BattleConditionController), nameof(BattleConditionController.RemoveFunction))]
+        //[HarmonyPrefix]
+        //static void RemoveFunctionPrefix(BattleConditionController __instance, BattleUnitData __0, int __1)
+        //{
+        //    var cond = (Last.Defaine.ConditionType)__1;
+        //    Plugin.Log.LogInfo($"Begin: {__instance.GetType().FullName}.{nameof(BattleConditionController.RemoveFunction)}({__0.GetUnitName()}, {cond})");
+        //}
+
+        //[HarmonyPatch(typeof(BattleConditionController), nameof(BattleConditionController.RemoveFunction))]
+        //[HarmonyPostfix]
+        //static void RemoveFunctionPostfix(BattleConditionController __instance, BattleUnitData __0, int __1)
+        //{
+        //    var cond = (Last.Defaine.ConditionType)__1;
+        //    Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleConditionController.RemoveFunction)}({__0.GetUnitName()}, {cond})");
+        //}
+
+        ////------- BattlePopPlug -------
         //[HarmonyPatch(typeof(BattlePopPlug), nameof(BattlePopPlug.Calculation))]
         //[HarmonyPrefix]
         //static void CalculationPrefix(BattlePopPlug __instance)

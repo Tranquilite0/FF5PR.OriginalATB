@@ -14,16 +14,30 @@
       https://nuget.samboy.dev/v3/index.json
     </RestoreAdditionalProjectSources>
     <RootNamespace>FF5PR.OriginalATB</RootNamespace>
+    <Configurations>Debug;Release;PublishZip</Configurations>
   </PropertyGroup>
 
   <PropertyGroup>
     <GameRegistryPath>HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 1173810</GameRegistryPath>
     <GamePath Condition="'$(GamePath)' == ''">$([MSBuild]::GetRegistryValueFromView('$(GameRegistryPath)', 'InstallLocation', null, RegistryView.Registry32))</GamePath>
     <GamePath Condition="'$(GamePath)' == ''">$([MSBuild]::GetRegistryValueFromView('$(GameRegistryPath)', 'InstallLocation', null, RegistryView.Registry64))</GamePath>
+    <!-- The above code doesn't actually work in net6.0+ since Windows Registry editing was removed in .NET core. -->
     <SteamLibraryPath>D:\Games\SteamLibrary\steamapps\common</SteamLibraryPath>
     <GamePath Condition="'$(GamePath)' == ''">$(SteamLibraryPath)\FINAL FANTASY V PR</GamePath>
     <OutputPath>$(GamePath)\BepInEx\plugins\$(AssemblyName)\</OutputPath>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'PublishZip'">
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>None</DebugType>
+    <OutputPath>publish\bin\BepInEx\plugins\$(AssemblyName)\</OutputPath>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <Compile Remove="publish\**" />
+    <EmbeddedResource Remove="publish\**" />
+    <None Remove="publish\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="..\LICENSE.txt" Link="LICENSE.txt">
@@ -101,4 +115,13 @@
       <Private>False</Private>
     </Reference>
   </ItemGroup>
+
+
+  <Target Name="ZipOutputPath" AfterTargets="Build" Condition="'$(Configuration)' == 'PublishZip'">
+    <ZipDirectory
+        SourceDirectory="publish\bin"
+        DestinationFile="publish\$(AssemblyName).$(Version).zip"
+        Overwrite="true"/>
+  </Target>
+  
 </Project>

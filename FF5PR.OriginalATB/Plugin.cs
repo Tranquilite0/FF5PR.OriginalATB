@@ -39,12 +39,9 @@ namespace FF5PR.OriginalATB
                 ApplyPatch(typeof(BattleATBDelayPatches), GameVersion.FF4 | GameVersion.FF5 | GameVersion.FF6);
             }
 
-            if (Config.ATBFormula.Value != ATBFormula.PixelRemaster)
-            {
-                //TODO: does this even work in FF4? If it does, it would probably have weird balance issues since agility might not have the same ranges as V.
-                ApplyPatch(typeof(ATBFormulaPatches), GameVersion.FF5 | GameVersion.FF4);
-                //ApplyPatch(typeof(TestPatches), GameVersion.FF5 | GameVersion.FF4);
-            }
+            //TODO: does this even work in FF4? If it does, it would probably have weird balance issues since agility might not have the same ranges as V.
+            ApplyPatch(typeof(ATBFormulaPatches), GameVersion.FF5 | GameVersion.FF4);
+            ApplyPatch(typeof(TestPatches), GameVersion.FF5 | GameVersion.FF4);
 
             Log.LogInfo("Patches applied!");
         }
