@@ -10,7 +10,6 @@ namespace FF5PR.OriginalATB;
 public sealed class ModComponent(IntPtr ptr) : MonoBehaviour(ptr)
 {
     public static ModComponent Instance { get; private set; }
-    private bool _isDisabled;
 
     public BattleDelayState CurrentBattleDelayState = new();
 
@@ -48,7 +47,6 @@ public sealed class ModComponent(IntPtr ptr) : MonoBehaviour(ptr)
         }
         catch (Exception e)
         {
-            _isDisabled = true;
             Plugin.Log.LogError($"[{nameof(ModComponent)}].{nameof(Awake)}(): {e}");
         }
     }

@@ -10,21 +10,7 @@ namespace FF5PR.OriginalATB.Patches
 {
     public static class ATBFormulaPatches
     {
-        private static bool isDuringInit = false;
-
-        [HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.Init))]
-        [HarmonyPrefix]
-        static void InitPrefix()
-        {
-            isDuringInit = true;
-        }
-
-        [HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.Init))]
-        [HarmonyPostfix]
-        static void InitPostfix()
-        {
-            isDuringInit = false;
-        }
+        public static BattlePopPlug.PreeMptiveState PreeMptiveState { get; set; } = default;
 
         /// <summary>
         /// Reset ATB to MinATB at end of turn instead of 0.
@@ -58,7 +44,8 @@ namespace FF5PR.OriginalATB.Patches
             }
 
             //TODO: more research into PR ATBCalc formula to see if a formula for ATBValue at 0 speed, 0 weight, 1.0 gamespeed can be deduced for a given deltaTime.
-            // This is my best guess at the PR atbDelta formula with agi/weight factors removed.
+            //TODO: Alternatively, figure out the time/ATB bar% factor from the original (I know its 16 frames per ATB chunk, but I am not sure how big that chunk is.
+            // This is my best guess at deducing the PR atbDelta formula with agi/weight factors removed.
             var atbDelta = Time.deltaTime * __instance.ATBCalcCoefficient * BattlePlugManager.Instance().ATBSpeed;
 
             if(Plugin.Config.ATBFormula.Value == ATBFormula.OriginalNoHaste)
@@ -68,79 +55,55 @@ namespace FF5PR.OriginalATB.Patches
             }
 
             __result = atbDelta;
+            //Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleProgressATBFF0.ATBCalc)}({__0.GetUnitName()})->{__result:F2}");
         }
 
+        /// <summary>
+        /// Just skip the original <see cref="BattleProgressATB.SetPreeMptive"/>.
+        /// We are reimplementing this and at a slightly later time in the battle init sequence.
+        /// </summary>
+        /// <returns></returns>
         [HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.SetPreeMptive))]
         [HarmonyPrefix]
         static bool SetPreeMptivePrefix()
         {
-            return !isDuringInit;
+            PreeMptiveState = BattlePlugManager.Instance().BattlePopPlug.GetResult();
+            //TODO: Just let the method run?
+            return false;
         }
 
         /// <summary>
-        /// 
+        /// Set start of fight ATB at the earliest possible point I could find in the battle
+        /// setup routines where Auto-Haste effects have been applied.
         /// </summary>
         /// <param name="__instance"></param>
-        [HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.SetPreeMptive))]
-        [HarmonyPostfix]
-        static void SetPreeMptiveHook(BattleProgressATB __instance)
+        [HarmonyPatch(typeof(BattleController), nameof(BattleController.StartInBattle))]
+        [HarmonyPrefix]
+        static void LateSetPreeMptive(BattleController __instance)
         {
-            //SetPreeMptive is called twice at the start of battle.
-            //We only want to apply our changes in the second call.
-            if (isDuringInit)
+            if(BattlePlugManager.Instance().BattleProgress.TryCast<BattleProgressATB>() is not BattleProgressATB battleProgressATB)
             {
-                Plugin.Log.LogInfo($"Bailing from SetPreeMptive() call during Init().");
+                Plugin.Log.LogError("BattlePlugManager.BattleProgress is not BattleProgressATB!");
                 return;
             }
 
-            Plugin.Log.LogInfo($"Ding!");
-
-            var state = BattlePlugManager.Instance().BattlePopPlug.GetResult();
-
-            //For whatever reason, auto-haste from equipped hermes sandles has not been applied yet.
-            //TODO: figure out how to get autohaste applied, or figure out how to postpone applying PreeMptive ATB changes until it is.
-            // Try and force the component that applies the time magnification to run.
-            //Plugin.Log.LogInfo($"Trying something potentially dumb...");
-            //BattlePlugManager.Instance().BattleStatusControl.Update();
-            //BattlePlugManager.Instance().BattleFieldConditionController.Update();
-            //BattlePlugManager.Instance().BattleConditionController.CheckAddCondition();
-            foreach ((var unitData, var _) in __instance.gaugeStatusDictionary.ToManaged())
+            foreach ((var unitData, var _) in battleProgressATB.gaugeStatusDictionary.ToManaged())
             {
-                //For whatever reason, the auto-haste from equipped hermes sandles might not have been applied yet.
-                //BattlePlugManager.Instance().BattleConditionController.FlagCondition(unitData);
-                
-                //BattlePlugManager.Instance().BattleConditionController.CheckConditionFunction(unitData);
-                //BattlePlugManager.Instance().BattleConditionController.CheckAddCondition(unitData);
-                //BattlePlugManager.Instance().BattleConditionController.CheckConditionFunction(unitData);
-                //BattlePlugManager.Instance().BattleConditionController.CheckAddCondition(unitData);
-
-                //if (unitData.GetOwnedCharacterData() is not null)
-                //{
-                //    Plugin.Log.LogInfo($"ding!");
-                //    unitData.SetTimeMagnification(2.0f);
-                //}
-
-                ////For whatever reason, the auto-haste from equipped hermes sandles might not have been applied yet.
-                //if (unitData.BattleUnitDataInfo.GetConditionType().Contains(Last.Defaine.ConditionType.Heist))
-                //{
-                //    unitData.SetTimeMagnification(2.0f);
-                //}
-
                 if (GameDetection.Version == GameVersion.FF5
                     && unitData.HasMasamuneEquipped())
                 {
                     Plugin.Log.LogInfo($"Masamune found, setting ATB to: {BattleProgressATB.MaxATBGauge}");
-                    __instance.ChangeATBGaugeByUnitData(unitData, BattleProgressATB.MaxATBGauge);
+                    battleProgressATB.ChangeATBGaugeByUnitData(unitData, BattleProgressATB.MaxATBGauge);
 
                     continue;
                 }
 
-                __instance.ChangeATBGaugeByUnitData(unitData, unitData.MinATB(state));
+                battleProgressATB.ChangeATBGaugeByUnitData(unitData, unitData.MinATB(PreeMptiveState));
             }
 
             if (Plugin.Config.AdvanceFirstTurn.Value)
             {
-                __instance.AdvanceToNextTurn();
+                battleProgressATB.AdvanceToNextTurn();
             }
         }
     }

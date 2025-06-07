@@ -9,7 +9,6 @@ public class BattleDelayState
     //public bool Escaping { get; set; }
     //public int PlayerUnitsReadyCount { get; set; }
     public bool IsNewTurn { get; set; } = false;
-    public bool OriginalIsWaiting { get; set; }
     public float DelayTimer { get; set; }
 
     //private bool _wait;
@@ -25,8 +24,7 @@ public class BattleDelayState
     {
         //Escaping = false;
         //PlayerUnitsReadyCount = 0;
-        IsNewTurn = false;
-        OriginalIsWaiting = false;
+        //IsNewTurn = false;
         TurnEnded();
     }
 
@@ -46,6 +44,7 @@ public class BattleDelayState
     {
         DelayTimer = 0f;
         IsNewTurn = true;
+        //Plugin.Log.LogInfo(nameof(TurnEnded));
     }
 
     public void RestartDelayTimer()
@@ -60,6 +59,7 @@ public class BattleDelayState
             _ => Plugin.Config.NormalDelayTime.Value,
         };
         IsNewTurn = false;
+        //Plugin.Log.LogInfo($"{nameof(RestartDelayTimer)}: DelayTimer={DelayTimer:F2}");
     }
 }
 

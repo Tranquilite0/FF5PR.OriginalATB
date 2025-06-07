@@ -1,5 +1,7 @@
 ﻿using Last.Battle;
+using Last.Data.Master;
 using Last.Data.User;
+using Last.Management;
 using System;
 using UnityEngine;
 
@@ -154,6 +156,21 @@ namespace FF5PR.OriginalATB
             }
 
             return minAdvanceDelta;
+        }
+
+        public static string GetUnitName(this BattleUnitData unitData)
+        {
+            //Check if player character
+            if (unitData.GetOwnedCharacterData() is OwnedCharacterData ownedCharacterData)
+            {
+                return ownedCharacterData.Name;
+            }
+            else if (unitData.GetMonster() is Monster monster)
+            {
+                return MessageManager.Instance.GetMessage(monster.MesIdName);
+            }
+
+            return "<unknown unit>";
         }
     }
 }
