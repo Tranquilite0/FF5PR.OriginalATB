@@ -41,7 +41,7 @@ namespace FF5PR.OriginalATB
 
             //TODO: does this even work in FF4? If it does, it would probably have weird balance issues since agility might not have the same ranges as V.
             ApplyPatch(typeof(ATBFormulaPatches), GameVersion.FF5 | GameVersion.FF4);
-            ApplyPatch(typeof(TestPatches), GameVersion.FF5 | GameVersion.FF4);
+            //ApplyPatch(typeof(TestPatches), GameVersion.FF5 | GameVersion.FF4);
 
             Log.LogInfo("Patches applied!");
         }
