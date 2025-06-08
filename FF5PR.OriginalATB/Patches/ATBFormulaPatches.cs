@@ -100,6 +100,7 @@ namespace FF5PR.OriginalATB.Patches
         static bool SetPreeMptivePrefix()
         {
             PreeMptiveState = BattlePlugManager.Instance().BattlePopPlug.GetResult();
+            //Plugin.Log.LogInfo($"PreeMptiveState={PreeMptiveState}");
             if (Plugin.Config.ATBFormula.Value == ATBFormula.PixelRemaster)
             {
                 return true;

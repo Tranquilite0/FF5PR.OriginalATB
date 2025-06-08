@@ -28,14 +28,15 @@ namespace FF5PR.OriginalATB
             //As far as I know, this is always 0.5 when slow 2.0 when hasted and 1.0 otherwise.
             var timeMagnification = Plugin.Config.ATBFormula.Value == ATBFormula.Original ? battleUnitData.timeMagnification : 1f;
 
-            //Plugin.Log.LogInfo($"MinATB Inputs: agi={agi}, weight={weight}, mult={timeMagnification}");
+            //Plugin.Log.LogInfo($"Calculating MinATB for {battleUnitData.GetUnitName()}:");
+            //Plugin.Log.LogInfo($"Inputs: agi={agi}, weight={weight}, mult={timeMagnification}, state={preeMptiveState}");
 
             //The original ATB formula calculates integer values in the range of 1-255 (lower is fuller ATB).
             //We need to invert the range so that higher is fuller and rescale the range to BattleProgressATB.MaxATBGauge.
             //We'll stick to using integer math at first for "authenticity" and convert to float at the end.
             var atbMinInt = Math.Clamp(120 - agi + (weight / 8), ATBMinOriginal, ATBMaxOriginal);
             atbMinInt = Math.Clamp((int)(atbMinInt / timeMagnification), ATBMinOriginal, ATBMaxOriginal);
-
+            //Plugin.Log.LogInfo($"PreeMptivePenalty: {CalcPreeMptivePenalty(battleUnitData, preeMptiveState)}");
             atbMinInt = Math.Clamp(atbMinInt + CalcPreeMptivePenalty(battleUnitData, preeMptiveState), ATBMinOriginal, ATBMaxOriginal);
 
             //Plugin.Log.LogInfo($"MinATB Original: {atbMinInt}");
@@ -61,10 +62,10 @@ namespace FF5PR.OriginalATB
 
         private static int CalcPreeMptivePenalty(BattleUnitData battleUnitData, BattlePopPlug.PreeMptiveState preeMptiveState) => preeMptiveState switch
         {
-            BattlePopPlug.PreeMptiveState.BackAttack => battleUnitData is BattlePlayerData ? BackAttackPenalty : 0,
-            BattlePopPlug.PreeMptiveState.PreeMptive => battleUnitData is BattleEnemyData ? PreeMptivePenalty : 0,
+            BattlePopPlug.PreeMptiveState.BackAttack => battleUnitData.GetOwnedCharacterData() is not null ? BackAttackPenalty : 0,
+            BattlePopPlug.PreeMptiveState.PreeMptive => battleUnitData.GetMonster() is not null ? PreeMptivePenalty : 0,
             //This state doesn't occur in FF5 iirc, but we will include it for fun.
-            BattlePopPlug.PreeMptiveState.EnemyPreeMptive => battleUnitData is BattlePlayerData ? PreeMptivePenalty : 0,
+            BattlePopPlug.PreeMptiveState.EnemyPreeMptive => battleUnitData.GetOwnedCharacterData() is not null ? PreeMptivePenalty : 0,
             //TODO: add cases for other states which don't occur in FF5?
             _ => 0,
         };
