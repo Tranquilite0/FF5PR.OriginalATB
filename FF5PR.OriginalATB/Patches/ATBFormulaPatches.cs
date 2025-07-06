@@ -55,7 +55,7 @@ namespace FF5PR.OriginalATB.Patches
                 battleProgressATB.ChangeATBGaugeByUnitData(battleUnitData, battleUnitData.MinATB());
             }
 
-            Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleConditionController.RemoveFunction)}({battleUnitData.GetUnitName()}, {condition})");
+            //Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleConditionController.RemoveFunction)}({battleUnitData.GetUnitName()}, {condition})");
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace FF5PR.OriginalATB.Patches
             atbDelta = atbDelta == 0f ? 0.01f : atbDelta;
 
             __result = atbDelta;
-            //Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleProgressATBFF0.ATBCalc)}({__0.GetUnitName()})->{__result:F2}");
+            //Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleProgressATBFF0.ATBCalc)}({battleUnitData.GetUnitName()})->{__result:F2}");
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace FF5PR.OriginalATB.Patches
         [HarmonyPrefix]
         static void LateSetPreeMptive(BattleController __instance)
         {
-            if(BattlePlugManager.Instance().BattleProgress.TryCast<BattleProgressATB>() is not BattleProgressATB battleProgressATB)
+            if (BattlePlugManager.Instance().BattleProgress.TryCast<BattleProgressATB>() is not BattleProgressATB battleProgressATB)
             {
                 Plugin.Log.LogError("BattlePlugManager.BattleProgress is not BattleProgressATB!");
                 return;
@@ -174,5 +174,13 @@ namespace FF5PR.OriginalATB.Patches
             }
         }
 
+        [HarmonyPatch(typeof(BattleStatusControl), nameof(BattleStatusControl.CreateBattleEnemyData))]
+        [HarmonyPostfix]
+        static void AddEnemyAgilityVariance(ref BattleEnemyData __result)
+        {
+            int agiIncrement = CommonUtility.GetRand(-1, 2);
+            //Plugin.Log.LogInfo($"Adjusting {__result.GetUnitName()} Agility {__result.BattleUnitDataInfo.Parameter.BaseAgility} -> {__result.BattleUnitDataInfo.Parameter.BaseAgility + agiIncrement} ({agiIncrement:+0;-#})");
+            __result.BattleUnitDataInfo.Parameter.BaseAgility += agiIncrement;
+        }
     }
 }
