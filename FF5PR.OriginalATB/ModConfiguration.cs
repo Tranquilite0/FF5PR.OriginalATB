@@ -18,6 +18,7 @@ public sealed class ModConfiguration
     private ConfigFile _config;
     public ConfigEntry<ATBFormula> ATBFormula;
     public ConfigEntry<bool> AdvanceFirstTurn;
+    public ConfigEntry<bool> MonsterAgiVariance;
 
     public ConfigEntry<bool> DelayAtTurnStart;
     public ConfigEntry<float> VerySlowDelayTime;
@@ -43,6 +44,13 @@ public sealed class ModConfiguration
               - {FF5PR.OriginalATB.ATBFormula.OriginalFillRate}: Haste/Slow part of ATB fill rate
               - {FF5PR.OriginalATB.ATBFormula.PixelRemaster}: Unchanged ATB formula
              """
+        );
+
+        MonsterAgiVariance = _config.Bind(
+             "ATB",
+             nameof(MonsterAgiVariance),
+             true,
+             "Add a random 0, +1, or -1 to monster Agility/Speed at the start of battle."
         );
 
         AdvanceFirstTurn = _config.Bind(

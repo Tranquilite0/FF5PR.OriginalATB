@@ -10,6 +10,8 @@ This mod offers multiple options to mix and match ATB behaviors.
     - Original: The original formula where all units' ATB fills at the same rate with the minimum ATB value based on Agility/Weight/Haste/Slow.
     - Original (/w Fill Rate): The original formula, but Haste/Slow changes the rate at which the ATB fills instead of being baked into the minimum value.
     - PixelRemaster: The unchanged ATB formula that the Pixel Remaster uses.
+- Enemy Agility Variance:
+    - Randomly adds 0, +1, or -1 to enemy agility at the start of battle to add a little variance to the way battles play out (like in the original).
 - Advance ATB at Battle Start:
     - Makes it so that the ATB automatically advances at the start of battle until the first unit gets their turn.
 - Delay Time at Turn Start:
