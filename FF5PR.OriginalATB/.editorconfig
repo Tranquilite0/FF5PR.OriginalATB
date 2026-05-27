@@ -1,0 +1,7 @@
+# Remove the line below if you want to inherit .editorconfig settings from higher directories
+root = true
+
+# Set 2-space indentation for all .csproj files
+[*.csproj]
+indent_style = space
+indent_size = 2

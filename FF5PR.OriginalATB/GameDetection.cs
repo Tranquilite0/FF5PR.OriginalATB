@@ -30,42 +30,25 @@ public class GameDetection
         private set => _version = value;
     }
 
-    private static GameVersion GetGameVersion()
+    private static GameVersion GetGameVersion() => GetProductName() switch
     {
-        switch (GetProductName())
+        "FINAL FANTASY" => GameVersion.FF1,
+        "FINAL FANTASY II" => GameVersion.FF2,
+        "FINAL FANTASY III" => GameVersion.FF3,
+        "FINAL FANTASY IV" => GameVersion.FF4,
+        "FINAL FANTASY V" => GameVersion.FF5,
+        "FINAL FANTASY VI" => GameVersion.FF6,
+        _ => GetModuleFileName() switch
         {
-            case "FINAL FANTASY":
-                return GameVersion.FF1;
-            case "FINAL FANTASY II":
-                return GameVersion.FF2;
-            case "FINAL FANTASY III":
-                return GameVersion.FF3;
-            case "FINAL FANTASY IV":
-                return GameVersion.FF4;
-            case "FINAL FANTASY V":
-                return GameVersion.FF5;
-            case "FINAL FANTASY VI":
-                return GameVersion.FF6;
-        }
-
-        switch (GetModuleFileName())
-        {
-            case "FINAL FANTASY":
-                return GameVersion.FF1;
-            case "FINAL FANTASY II":
-                return GameVersion.FF2;
-            case "FINAL FANTASY III":
-                return GameVersion.FF3;
-            case "FINAL FANTASY IV":
-                return GameVersion.FF4;
-            case "FINAL FANTASY V":
-                return GameVersion.FF5;
-            case "FINAL FANTASY VI":
-                return GameVersion.FF6;
-        }
-
-        return GameVersion.Unknown;
-    }
+            "FINAL FANTASY" => GameVersion.FF1,
+            "FINAL FANTASY II" => GameVersion.FF2,
+            "FINAL FANTASY III" => GameVersion.FF3,
+            "FINAL FANTASY IV" => GameVersion.FF4,
+            "FINAL FANTASY V" => GameVersion.FF5,
+            "FINAL FANTASY VI" => GameVersion.FF6,
+            _ => GameVersion.Unknown,
+        },
+    };
 
     private static string GetProductName()
     {
@@ -93,6 +76,6 @@ public class GameDetection
             return input;
         }
 
-        return input.Substring(0, nullCharIndex);
+        return input[..nullCharIndex];
     }
 }

@@ -2,6 +2,7 @@
 using Last.Battle;
 using Last.Data.User;
 using System;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem.Utilities;
 
@@ -12,6 +13,14 @@ namespace FF5PR.OriginalATB.Patches
     /// </summary>
     public static class TestPatches
     {
+        //------- BattleUtility -------
+        //[HarmonyPatch(typeof(BattleUtility), nameof(BattleUtility.GetTime))]
+        //[HarmonyPrefix]
+        //static void BattleUtilityGetTimePre()
+        //{
+        //    Plugin.Log.LogInfo($"Begin: {typeof(BattleUtility).FullName}.{nameof(BattleUtility.GetTime)}");
+        //}
+
         //------- BattleProgressATBFF0 -------
         //[HarmonyPatch(typeof(BattleProgressATBFF0), nameof(BattleProgressATBFF0.Init))]
         //[HarmonyPrefix]
@@ -145,14 +154,41 @@ namespace FF5PR.OriginalATB.Patches
         //[HarmonyPrefix]
         //static void UpdateChantTimePre(BattleProgressATB __instance)
         //{
-        //    Plugin.Log.LogInfo($"Begin: {__instance.GetType().FullName}.{nameof(BattleProgressATB.UpdateChantTime)}");
+        //    //Plugin.Log.LogInfo($"Begin: {__instance.GetType().FullName}.{nameof(BattleProgressATB.UpdateChantTime)}");
+        //    var chantTimes = __instance.chantingInfo.ToManaged().Select(x => x.time.ToString("F3"));
+        //    if (chantTimes.Any())
+        //    {
+        //        Plugin.Log.LogInfo($"Times(post): {string.Join(",", chantTimes)}");
+        //    }
         //}
 
         //[HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.UpdateChantTime))]
         //[HarmonyPostfix]
         //static void UpdateChantTimePost(BattleProgressATB __instance)
         //{
-        //    Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleProgressATB.UpdateChantTime)}");
+        //    var chantTimes = __instance.chantingInfo.ToManaged().Select(x => x.time.ToString("F3"));
+        //    if (chantTimes.Any())
+        //    {
+        //        Plugin.Log.LogInfo($"Times(post): {string.Join(",", chantTimes)}");
+        //    }
+        //    //Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleProgressATB.UpdateChantTime)}");
+        //}
+
+        //[HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.SetActData))]
+        //[HarmonyPrefix]
+        //static void SetActDataPre(BattleProgressATB __instance, BattleActData battleActData)
+        //{
+        //    Plugin.Log.LogInfo($"Begin: {__instance.GetType().FullName}.{nameof(BattleProgressATB.SetActData)}");
+
+        //    Plugin.Log.LogInfo($"{battleActData.AttackUnitData.GetUnitName()} using Command ID: {battleActData.Command?.Id ?? -1}");
+        //    var abilityList = battleActData.abilityList.ToManaged();
+
+        //    if(abilityList is null) { return; }
+
+        //    for (int i = 0; i < abilityList.Count; i++)
+        //    {
+        //        Plugin.Log.LogInfo($"  Ability[{i}]: ID: {battleActData.abilityList[i].Id} Wait: {battleActData.abilityList[i].AbilityWait}");
+        //    }
         //}
 
         //[HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.UpdateUI))]

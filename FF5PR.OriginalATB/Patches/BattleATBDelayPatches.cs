@@ -33,28 +33,32 @@ public static class BattleATBDelayPatches
     }
 
     /// <summary>
-    /// If the delay timer still has time, then just decrement the timer and skip ATB updates.
-    /// There might be other battle things which still run (condition timers?),
-    /// but the delay time is at most 4 seconds so it shouldnt be too big of a deal.
+    /// Hooks <see cref="BattleProgressATB.Update"/> to determine which updates should be skipped.
+    /// Also handles decrementing <see cref="BattleDelayState.DelayTimer"/>.
     /// </summary>
     /// <param name="__instance"></param>
-    /// <returns></returns>
-    [HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.UpdateGaugeIncrease))]
+    /// <returns>True if <see cref="BattleProgressATB.Update"/> should be skipped.</returns>
+    [HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.Update))]
     [HarmonyPrefix]
-    static bool UpdateDelayTimer(BattleProgressATB __instance)
+    static bool ShouldAllowATBUpdate(BattleProgressATB __instance)
     {
-        
-
-        if (ModComponent.Instance.CurrentBattleDelayState.IsWaiting)
+        //Allow update to continue for conditions where update wouldnt occur anyway or if delay timer is expired.
+        if(!__instance.isEnabled
+            || BattlePlugManager.instance.BattleActExection.GetStatingAct()
+            || !BattleUtility.IsStagingEnd()
+            || (SystemConfig.instance.ATBBattleType == ATBBattleType.Wait && BattleUIManager.instance.IsWaiting())
+            || BattleUIManager.instance.IsForceWaiting()
+            || !ModComponent.Instance.CurrentBattleDelayState.IsWaiting)
         {
-            //Plugin.Log.LogInfo($"Begin: {typeof(BattleProgressATB).FullName}.{nameof(BattleProgressATB.UpdateGaugeIncrease)} DelayTimer={ModComponent.Instance.CurrentBattleDelayState.DelayTimer:F4} (skipping)");
+            return true;
+        }
+        else
+        {
+            //Plugin.Log.LogInfo($"Begin: {typeof(BattleProgressATB).FullName}.{nameof(BattleProgressATB.Update)} DelayTimer={ModComponent.Instance.CurrentBattleDelayState.DelayTimer:F4} (delaying)");
             ModComponent.Instance.CurrentBattleDelayState.DelayTimer -= Time.deltaTime;
 
             return false;
         }
-
-        //Plugin.Log.LogInfo($"Begin: {typeof(BattleProgressATB).FullName}.{nameof(BattleProgressATB.UpdateGaugeIncrease)} DelayTimer={ModComponent.Instance.CurrentBattleDelayState.DelayTimer:F4} (not skipping)");
-        return true;
     }
 
     [HarmonyPatch(typeof(BattlePlugManager), nameof(BattlePlugManager.Start))]

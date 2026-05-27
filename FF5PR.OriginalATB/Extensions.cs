@@ -3,6 +3,8 @@ using Last.Data.Master;
 using Last.Data.User;
 using Last.Management;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace FF5PR.OriginalATB
@@ -15,6 +17,14 @@ namespace FF5PR.OriginalATB
         public const int ATBMinOriginal = 1;
         public const int ATBMaxOriginal = 255;
 
+        public const int ATBCalcCoefficient = 64;
+        public const float ATBCalcBossEnemyCoefficient = 0.90f;
+
+        /// <summary>
+        /// Accounts for realtime ATB filling differences between Original (0-128 and PR (0-100)
+        /// </summary>
+        public const float ATBGuageRescalingFactor = 0.78125f;
+
         /// <summary>
         /// Calculate the minimum ATB value using the original FFV ATB formula rescaled to the new ATB system.
         /// </summary>
@@ -26,7 +36,7 @@ namespace FF5PR.OriginalATB
             var agi = battleUnitData.BattleUnitDataInfo.Parameter.ConfirmedAgility();
             var weight = battleUnitData.BattleUnitDataInfo.Parameter.ConfirmedWeight();
             //As far as I know, this is always 0.5 when slow 2.0 when hasted and 1.0 otherwise.
-            var timeMagnification = Plugin.Config.ATBFormula.Value == ATBFormula.Original ? battleUnitData.timeMagnification : 1f;
+            var timeMagnification = Plugin.Config.ATBFormula.Value == ATBFormula.Original ? battleUnitData.timeMagnification : 1.0f;
 
             //Plugin.Log.LogInfo($"Calculating MinATB for {battleUnitData.GetUnitName()}:");
             //Plugin.Log.LogInfo($"Inputs: agi={agi}, weight={weight}, mult={timeMagnification}, state={preeMptiveState}");
@@ -60,6 +70,108 @@ namespace FF5PR.OriginalATB
             return atbMinFloat;
         }
 
+        public static float CalcUnitSpeedCoefficient(this BattleUnitData battleUnitData)
+        {
+            var agi = battleUnitData.BattleUnitDataInfo.Parameter.ConfirmedAgility();
+            var weight = battleUnitData.BattleUnitDataInfo.Parameter.ConfirmedWeight();
+            var speedCoeff = (float)(agi - weight) / ATBCalcCoefficient + 1.0f;
+            if(battleUnitData.GetMonster() is Monster monsterData && monsterData.IsBoss())
+            {
+                speedCoeff *= ATBCalcBossEnemyCoefficient;
+            }
+
+            return speedCoeff;
+        }
+
+        /// <summary>
+        /// Calculates ATB Coefficient for given <paramref name="battleUnitData"/>.
+        /// Should give (almost) the same value as <see cref="BattleProgressATBFF0.ATBCalc(BattleUnitData)"/> when multiplied by <see cref="Time.deltaTime"/>.
+        /// Note: you wont get the exact same value since floating point math is sensitive to order of operations for rounding error.
+        ///  Use 
+        /// </summary>
+        /// <param name="battleUnitData"></param>
+        /// <returns></returns>
+        public static float CalcATBFF0Coefficient(this BattleUnitData battleUnitData) =>
+            BattleProgressATBFF0.UpdateFPSATB * battleUnitData.CalcUnitSpeedCoefficient() * BattlePlugManager.Instance().ATBSpeed * battleUnitData.timeMagnification;
+
+        /// <summary>
+        /// Should exactly match the value returned by <see cref="BattleProgressATBFF0.ATBCalc(BattleUnitData)"/> for the same <see cref="Time.deltaTime"/>.
+        /// </summary>
+        /// <param name="battleUnitData"></param>
+        /// <param name="deltaTime"></param>
+        /// <returns></returns>
+        public static float CalcATBFF0ForDelta(this BattleUnitData battleUnitData, float deltaTime) =>
+            deltaTime * BattleProgressATBFF0.UpdateFPSATB * battleUnitData.CalcUnitSpeedCoefficient() * BattlePlugManager.Instance().ATBSpeed * battleUnitData.timeMagnification;
+
+        /// <summary>
+        /// Should exactly match the value returned by <see cref="BattleProgressATBFF0.ATBCalc(BattleUnitData)"/>.
+        /// </summary>
+        /// <param name="battleUnitData"></param>
+        /// <returns></returns>
+        public static float CalcATBFF0ForDelta(this BattleUnitData battleUnitData) => CalcATBFF0ForDelta(battleUnitData, Time.deltaTime);
+
+        /// <summary>
+        /// Calculate <paramref name="battleUnitData"/> ATB Delta for a given <paramref name="deltaTime"/> and <paramref name="atbFormula"/>.
+        /// </summary>
+        /// <param name="battleUnitData"></param>
+        /// <param name="deltaTime"></param>
+        /// <param name="atbFormula"></param>
+        /// <returns></returns>
+        public static float CalcATBForDelta(this BattleUnitData battleUnitData, float deltaTime, ATBFormula atbFormula) => atbFormula switch
+        {
+            ATBFormula.Original => deltaTime * BattleProgressATBFF0.UpdateFPSATB * BattlePlugManager.Instance().ATBSpeed * ATBGuageRescalingFactor,
+            ATBFormula.OriginalFillRate => deltaTime * BattleProgressATBFF0.UpdateFPSATB * BattlePlugManager.Instance().ATBSpeed * battleUnitData.timeMagnification * ATBGuageRescalingFactor,
+            ATBFormula.PixelRemaster => deltaTime * BattleProgressATBFF0.UpdateFPSATB * battleUnitData.CalcUnitSpeedCoefficient() * BattlePlugManager.Instance().ATBSpeed * battleUnitData.timeMagnification,
+            _ => 0.0f
+        };
+
+        /// <summary>
+        /// Calculate <paramref name="battleUnitData"/> ATB Delta for a given <paramref name="deltaTime"/> using <see cref="ModConfiguration.ATBFormula"/>.
+        /// </summary>
+        /// <param name="battleUnitData"></param>
+        /// <param name="deltaTime"></param>
+        /// <returns></returns>
+        public static float CalcATBForDelta(this BattleUnitData battleUnitData, float deltaTime) => CalcATBForDelta(battleUnitData, deltaTime, Plugin.Config.ATBFormula.Value);
+
+        /// <summary>
+        /// Calculate <paramref name="battleUnitData"/> ATB Delta using <see cref="Time.deltaTime"/> and <see cref="ModConfiguration.ATBFormula"/>.
+        /// </summary>
+        /// <param name="battleUnitData"></param>
+        /// <returns></returns>
+        public static float CalcATBForDelta(this BattleUnitData battleUnitData) => CalcATBForDelta(battleUnitData, Time.deltaTime, Plugin.Config.ATBFormula.Value);
+
+        /// <summary>
+        /// Calculates the delta time needed for the <paramref name="battleUnitData"/> to get to their next turn.
+        /// </summary>
+        /// <param name="battleUnitData">Unit to calculate ATB for.</param>
+        /// <param name="guageValue">Unit's current ATB Guage value.</param>
+        /// <param name="atbFormula"><see cref="ATBFormula"/> to use.</param>
+        /// <returns></returns>
+        public static float CalcDeltaToNextTurn(this BattleUnitData battleUnitData, float guageValue, ATBFormula atbFormula)
+        {
+            //Check if unit already has their turn.
+            if(guageValue >= BattleProgressATB.MaxATBGauge)
+            {
+                return 0.0f;
+            }
+
+            var remainingGuage = BattleProgressATB.MaxATBGauge - guageValue;
+
+            return atbFormula switch
+            {
+                ATBFormula.Original => remainingGuage / (BattleProgressATBFF0.UpdateFPSATB * BattlePlugManager.Instance().ATBSpeed),
+                ATBFormula.OriginalFillRate => remainingGuage / (BattleProgressATBFF0.UpdateFPSATB * BattlePlugManager.Instance().ATBSpeed * battleUnitData.timeMagnification),
+                ATBFormula.PixelRemaster => remainingGuage / battleUnitData.CalcATBFF0Coefficient(),
+                _ => 0.0f
+            };
+        }
+
+        public static float CalcDeltaToNextTurn(this BattleUnitData battleUnitData, float guageValue) => CalcDeltaToNextTurn(battleUnitData, guageValue, Plugin.Config.ATBFormula.Value);
+
+        public static float CalcDeltaToNextTurn(this KeyValuePair<BattleUnitData, float> pair) => CalcDeltaToNextTurn(pair.Key, pair.Value);
+
+        public static float CalcDeltaToNextTurn(this KeyValuePair<BattleUnitData, float> pair, ATBFormula atbFormula) => CalcDeltaToNextTurn(pair.Key, pair.Value, atbFormula);
+
         private static int CalcPreeMptivePenalty(BattleUnitData battleUnitData, BattlePopPlug.PreeMptiveState preeMptiveState) => preeMptiveState switch
         {
             BattlePopPlug.PreeMptiveState.BackAttack => battleUnitData.GetOwnedCharacterData() is not null ? BackAttackPenalty : 0,
@@ -87,53 +199,21 @@ namespace FF5PR.OriginalATB
 
         public static void AdvanceToNextTurn(this BattleProgressATB battleProgressATB)
         {
-            bool applyTimeMag = Plugin.Config.ATBFormula.Value != ATBFormula.Original;
-            var atbToNextTurn = battleProgressATB.CalcATBToNextTurn(applyTimeMag);
+            var atbFormula = Plugin.Config.ATBFormula.Value;
+            var guageStatusDictionary = battleProgressATB.gaugeStatusDictionary.ToManaged();
+            var minDeltaToNext = guageStatusDictionary.Min(x => x.CalcDeltaToNextTurn(atbFormula));
 
-            //Dont advance if anyone's turn is already up.
-            if(atbToNextTurn <= 0)
-            {
+            if(minDeltaToNext <= 0.0f)
+            { 
                 return;
             }
 
-            if (Plugin.Config.ATBFormula.Value != ATBFormula.PixelRemaster)
+            //Just add the calculated ATB to next turn to everyone's guage
+            foreach ((var unitData, var guageValue) in battleProgressATB.gaugeStatusDictionary.ToManaged())
             {
-                //Just add the calculated ATB to next turn to everyone's guage
-                foreach ((var unitData, var guageValue) in battleProgressATB.gaugeStatusDictionary.ToManaged())
-                {
-                    battleProgressATB.ChangeATBGaugeByUnitData(unitData, guageValue + atbToNextTurn);
-                }
-                //Plugin.Log.LogInfo($"AdvanceToNextTurn incremented all ATBs by {atbToNextTurn}.");
+                var guageDelta = unitData.CalcATBForDelta(minDeltaToNext, atbFormula);
+                battleProgressATB.ChangeATBGaugeByUnitData(unitData, guageValue + guageDelta);
             }
-            //Since I havent properly reverse engineered the PR CalcATB formula, I have to simulate it with iterative calls to CalcATB until a unit gets their turn.
-            //but don't run the iteration if deltaTime is zero or we will enter an infinite loop.
-            else if (Time.deltaTime > 0f)
-            {
-                bool advancingATB = true;
-                //Set an upper bound on the number of iteration in case something unexpected happens and ATBs are not being incremented.
-                int loopCount = 0;
-
-                for (; advancingATB && loopCount < 1000; loopCount++ )
-                {
-                    foreach ((var unitData, var guageValue) in battleProgressATB.gaugeStatusDictionary.ToManaged())
-                    {
-                        var newValue = guageValue + battleProgressATB.ATBCalc(unitData);
-                        battleProgressATB.ChangeATBGaugeByUnitData(unitData, newValue);
-
-                        if (newValue >= BattleProgressATB.MaxATBGauge)
-                        {
-                            advancingATB = false;
-                        }
-                    }
-                }
-                Plugin.Log.LogInfo($"AdvanceToNextTurn Completed in {loopCount} iterations.");
-            }
-            else if (Time.deltaTime <= 0f)
-            {
-                Plugin.Log.LogInfo($"AdvanceToNextTurn cannot advance because deltaTime={Time.deltaTime}");
-            }
-
-
 
         }
 

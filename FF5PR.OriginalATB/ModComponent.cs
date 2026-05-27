@@ -4,6 +4,7 @@ using System;
 using Il2CppInterop.Runtime.Injection;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Last.Battle;
 
 namespace FF5PR.OriginalATB;
 
@@ -50,6 +51,4 @@ public sealed class ModComponent(IntPtr ptr) : MonoBehaviour(ptr)
             Plugin.Log.LogError($"[{nameof(ModComponent)}].{nameof(Awake)}(): {e}");
         }
     }
-
-
 }
