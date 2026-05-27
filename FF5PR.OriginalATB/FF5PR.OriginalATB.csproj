@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>FF5PR.OriginalATB</AssemblyName>
     <Product>FF5PR.OriginalATB</Product>
-    <Version>1.0.2</Version>
+    <Version>1.1.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -32,7 +32,7 @@
     <DebugType>None</DebugType>
     <OutputPath>publish\bin\BepInEx\plugins\$(AssemblyName)\</OutputPath>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <Compile Remove="publish\**" />
     <EmbeddedResource Remove="publish\**" />
@@ -49,19 +49,29 @@
     <None Include="..\README.md" Link="README.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="C:\Repos\FF5PR.OriginalATB\FF5PR.OriginalATB\.editorconfig" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.697" IncludeAssets="compile" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
     <PackageReference Include="System.Text.Json" Version="6.0.11" IncludeAssets="compile" />
+
+  </ItemGroup>
+
+  <!-- Publicize Assembly-CSharp.dll -->
+  <ItemGroup>
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3" PrivateAssets="all" />
+    <Reference Include="$(GamePath)\BepInEx\interop\Assembly-CSharp.dll" Publicize="true">
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
+    <!--<Reference Include="Assembly-CSharp">
       <HintPath>$(GamePath)\BepInEx\interop\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
-    </Reference>
+    </Reference>-->
     <Reference Include="Il2Cppmscorlib">
       <HintPath>$(GamePath)\BepInEx\interop\Il2Cppmscorlib.dll</HintPath>
       <Private>False</Private>
@@ -118,10 +128,14 @@
 
 
   <Target Name="ZipOutputPath" AfterTargets="Build" Condition="'$(Configuration)' == 'PublishZip'">
-    <ZipDirectory
-        SourceDirectory="publish\bin"
-        DestinationFile="publish\$(AssemblyName).$(Version).zip"
-        Overwrite="true"/>
+    <ZipDirectory SourceDirectory="publish\bin" DestinationFile="publish\$(AssemblyName).$(Version).zip" Overwrite="true" />
   </Target>
-  
+
+  <Target Name="DebugOutput" BeforeTargets="Compile">
+    <Message Text="Gamepath: $(GamePath)" Importance="high" />
+  </Target>
+
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Repos\FF5PR.OriginalATB\FF5PR.OriginalATB\.editorconfig" />
+  </ItemGroup>
 </Project>

@@ -48,7 +48,7 @@ namespace FF5PR.OriginalATB.Patches
                 return;
             }
 
-            var condition = (Last.Defaine.ConditionType)id;
+            //var condition = (Last.Defaine.ConditionType)id;
             var currAtb = battleProgressATB.GetAtbGaugeByUnitData(battleUnitData);
             if (currAtb == 0f)
             {
@@ -59,7 +59,7 @@ namespace FF5PR.OriginalATB.Patches
         }
 
         /// <summary>
-        /// Override ATBCalc function to not depend on Agility or Weight stats or unit type.
+        /// Override ATBCalc function to account for current ATB Formula.
         /// </summary>
         /// <param name="__instance"></param>
         /// <param name="battleUnitData"></param>
@@ -67,32 +67,29 @@ namespace FF5PR.OriginalATB.Patches
         [HarmonyPostfix]
         static void ATBCalcHook(BattleProgressATBFF0 __instance, ref float __result, BattleUnitData battleUnitData)
         {
+            //var derivedResult = battleUnitData.CalcATBFF0ForDelta(Time.deltaTime);
+            //if(__result != derivedResult)
+            //{
+            //    Plugin.Log.LogInfo($"ATB Calc Mismatch: {battleUnitData.GetUnitName()}=>{__result} != {derivedResult}");
+            //}
+
+            //No need to recalculate ATB Delta for PR.
             if (Plugin.Config.ATBFormula.Value == ATBFormula.PixelRemaster)
             {
                 return;
             }
 
-            //TODO: more research into PR ATBCalc formula to see if a formula for ATBValue at 0 speed, 0 weight, 1.0 gamespeed can be deduced for a given deltaTime.
-            //TODO: Alternatively, figure out the time/ATB bar% factor from the original (I know its 16 frames per ATB chunk, but I am not sure how big that chunk is.
-            // This is my best guess at deducing the PR atbDelta formula with agi/weight factors removed.
-            var atbDelta = Time.deltaTime * __instance.ATBCalcCoefficient * BattlePlugManager.Instance().ATBSpeed;
+            __result = battleUnitData.CalcATBForDelta();
 
-            if(Plugin.Config.ATBFormula.Value == ATBFormula.OriginalFillRate)
-            {
-                //Also apply haste/slow to atbDelta.
-                atbDelta *= battleUnitData.timeMagnification;
-            }
+            //Hack to avoid trigging ATB reset after conditions are removed
+            __result = __result == 0f ? 0.01f : __result;
 
-            //Hack to avoid trigging ATB reset after conditions removed
-            atbDelta = atbDelta == 0f ? 0.01f : atbDelta;
-
-            __result = atbDelta;
             //Plugin.Log.LogInfo($"  End: {__instance.GetType().FullName}.{nameof(BattleProgressATBFF0.ATBCalc)}({battleUnitData.GetUnitName()})->{__result:F2}");
         }
 
         /// <summary>
         /// Just skip the original <see cref="BattleProgressATB.SetPreeMptive"/> (unless we are using original ATB formula).
-        /// We are reimplementing this and at a slightly later time in the battle init sequence.
+        /// We are reimplementing this and at a slightly later time in the battle init sequence after conditions have been applied.
         /// </summary>
         /// <returns></returns>
         [HarmonyPatch(typeof(BattleProgressATB), nameof(BattleProgressATB.SetPreeMptive))]
@@ -155,7 +152,6 @@ namespace FF5PR.OriginalATB.Patches
             if (Plugin.Config.ATBFormula.Value == ATBFormula.Original
                 //and our time magnification has actually changed,
                 && __instance.timeMagnification != timeMagnification
-                //and we are ac
                 && BattlePlugManager.Instance().BattleProgress.TryCast<BattleProgressATB>() is BattleProgressATB battleProgressATB)
             {
                 var currAtb = battleProgressATB.GetAtbGaugeByUnitData(__instance);
@@ -181,6 +177,76 @@ namespace FF5PR.OriginalATB.Patches
             int agiIncrement = CommonUtility.GetRand(-1, 2);
             //Plugin.Log.LogInfo($"Adjusting {__result.GetUnitName()} Agility {__result.BattleUnitDataInfo.Parameter.BaseAgility} -> {__result.BattleUnitDataInfo.Parameter.BaseAgility + agiIncrement} ({agiIncrement:+0;-#})");
             __result.BattleUnitDataInfo.Parameter.BaseAgility += agiIncrement;
+        }
+
+        [HarmonyPatch(typeof(SongConditionFunction), nameof(SongConditionFunction.Start))]
+        [HarmonyPostfix]
+        static void OverrideSongConditionFunctionUpdateCycle(ref SongConditionFunction __instance)
+        {
+            __instance.updateCycle = Plugin.Config.SingDuration.Value == AbilityBehavior.Original ? 2 : 3;
+        }
+
+        [HarmonyPatch(typeof(SongConditionFunction), nameof(SongConditionFunction.Update))]
+        [HarmonyPrefix]
+        static void AdjustSongTimeForTimeMagnification(ref SongConditionFunction __instance)
+        {
+            //Song Condition normally increments currentTime at the rate of 2 * ATBSpeed * deltaTime.
+            //We want to correct it so that the formula becomes: 2 * ATBSpeed * deltaTime * timeMagnification.
+
+            //Bail if we dont need to make any adjustments.
+            if (__instance.currentTime >= __instance.updateCycle 
+                || __instance.BattleUnitData.timeMagnification == 1.0f
+                || BattlePlugManager.instance is not BattlePlugManager battlePlugManager)
+            {
+                return;
+            }
+
+            var atbSpeed = battlePlugManager.ATBSpeed;
+
+            //Undo the correction the update function is about to do while also applying our time-magnified version.
+            __instance.currentTime += (atbSpeed + atbSpeed) * Time.deltaTime * (__instance.BattleUnitData.timeMagnification - 1);
+        }
+
+        [HarmonyPatch(typeof(SongConditionFunction), nameof(SongConditionFunction.Update))]
+        [HarmonyPostfix]
+        static void SongConditionFunctionUpdatePost(ref SongConditionFunction __instance)
+        {
+            if (__instance.currentTime == 0.0f)
+            {
+                Plugin.Log.LogInfo($"{__instance.BattleUnitData.GetUnitName()}: Ding!");
+            }
+        }
+
+        [HarmonyPatch(typeof(BattleProgress), nameof(BattleProgress.GetChantingTime))]
+        [HarmonyPostfix]
+        static void OverrideAbilityWaitTimes(ref float __result, BattleActData battleActData)
+        {
+            __result = battleActData.abilityList.ToManaged().Select(x => x.Id).FirstOrDefault() switch
+            {
+                //Wait times should be multiplied by two to get realtime since these timers tick at double speed.
+
+                //Jump has two ability IDs (one for jumping up, the other for air time)
+                13 => Plugin.Config.JumpDuration.Value == AbilityBehavior.Original ? 2f/3f : __result,
+                607 => Plugin.Config.JumpDuration.Value == AbilityBehavior.Original ? 16f/3f : __result,
+                //Focus (also has two ability IDs but we only care about the charging one)
+                821 => Plugin.Config.FocusDuration.Value == AbilityBehavior.Original ? 4f : __result,
+                //Iainuki
+                20 => Plugin.Config.IainukiDuration.Value == AbilityBehavior.Original ? 4f : __result,
+                //Aim
+                22 => Plugin.Config.AimDuration.Value == AbilityBehavior.Original ? 1f/3f : __result,
+                //Check
+                25 => Plugin.Config.CheckDuration.Value == AbilityBehavior.Original ? 1f/3f : __result,
+                //Scan
+                26 => Plugin.Config.ScanDuration.Value == AbilityBehavior.Original ? 1f/3f : __result,
+                //Recover
+                33 => Plugin.Config.RecoverDuration.Value == AbilityBehavior.Original ? 1f/3f : __result,
+                //Revive
+                34 => Plugin.Config.ReviveDuration.Value == AbilityBehavior.Original ? 1f/3f : __result,
+                //Mimic
+                44 => Plugin.Config.MimicDuration.Value == AbilityBehavior.Original ? 1f/3f : __result,
+
+                _ => __result
+            };
         }
     }
 }

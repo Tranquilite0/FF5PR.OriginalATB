@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "FF5PR.OriginalATB": {
+      "commandName": "Project"
+    },
+    "Run FF5 PR": {
+      "commandName": "Executable",
+      "executablePath": "%ProgramFiles(x86)%\\Steam\\steam.exe",
+      "commandLineArgs": "steam://rungameid/1173810",
+      "debugEngines": "managed,native"
+    }
+  }
+}

@@ -13,13 +13,34 @@ public enum ATBFormula
     PixelRemaster,
 }
 
-public sealed class ModConfiguration
+public enum AbilityBehavior
 {
-    private ConfigFile _config;
+
+    Original = 0,
+    PixelRemaster,
+}
+
+public sealed class ModConfiguration(ConfigFile config)
+{
+    //ATB
     public ConfigEntry<ATBFormula> ATBFormula;
     public ConfigEntry<bool> AdvanceFirstTurn;
     public ConfigEntry<bool> MonsterAgiVariance;
 
+    //Ability
+    public ConfigEntry<bool> SingHasteSlow;
+    public ConfigEntry<AbilityBehavior> SingDuration;
+    public ConfigEntry<AbilityBehavior> JumpDuration;
+    public ConfigEntry<AbilityBehavior> FocusDuration;
+    public ConfigEntry<AbilityBehavior> IainukiDuration;
+    public ConfigEntry<AbilityBehavior> AimDuration;
+    public ConfigEntry<AbilityBehavior> CheckDuration;
+    public ConfigEntry<AbilityBehavior> ScanDuration;
+    public ConfigEntry<AbilityBehavior> RecoverDuration;
+    public ConfigEntry<AbilityBehavior> ReviveDuration;
+    public ConfigEntry<AbilityBehavior> MimicDuration;
+
+    //Delay
     public ConfigEntry<bool> DelayAtTurnStart;
     public ConfigEntry<float> VerySlowDelayTime;
     public ConfigEntry<float> SlowDelayTime;
@@ -27,14 +48,9 @@ public sealed class ModConfiguration
     public ConfigEntry<float> FastDelayTime;
     public ConfigEntry<float> VeryFastDelayTime;
 
-    public ModConfiguration(ConfigFile config)
-    {
-        _config = config;
-    }
-
     public void Init()
     {
-        ATBFormula = _config.Bind(
+        ATBFormula = config.Bind(
              "ATB",
              nameof(ATBFormula),
              OriginalATB.ATBFormula.Original,
@@ -46,56 +62,173 @@ public sealed class ModConfiguration
              """
         );
 
-        MonsterAgiVariance = _config.Bind(
+        MonsterAgiVariance = config.Bind(
              "ATB",
              nameof(MonsterAgiVariance),
              true,
              "Add a random 0, +1, or -1 to monster Agility/Speed at the start of battle."
         );
 
-        AdvanceFirstTurn = _config.Bind(
+        AdvanceFirstTurn = config.Bind(
              "ATB",
              nameof(AdvanceFirstTurn),
              true,
-             "Automatically Advance ATB at the start of battle to the first turn."
+             "Automatically Advance ATB at the start of battle to the first Unit's turn."
         );
 
-        DelayAtTurnStart = _config.Bind(
+        SingHasteSlow = config.Bind(
+             "Ability",
+             nameof(SingHasteSlow),
+             true,
+             "Patch the Bard's Sing command to use slow/haste status (like the original)."
+        );
+
+        SingDuration = config.Bind(
+             "Ability",
+             nameof(SingDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Song command increase stats in _ intervals:
+              - {AbilityBehavior.Original}: 1 second
+              - {AbilityBehavior.PixelRemaster}: 1.5 second
+             """
+        );
+
+        JumpDuration = config.Bind(
+             "Ability",
+             nameof(JumpDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Jump command execute in:
+              - {AbilityBehavior.Original}: 0.33 seconds (before jump) and 2.66 seconds (in air)
+              - {AbilityBehavior.PixelRemaster}: 3.5 seconds (in air)
+             """
+        );
+
+        FocusDuration = config.Bind(
+             "Ability",
+             nameof(FocusDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Focus command execute in:
+              - {AbilityBehavior.Original}: 2 seconds
+              - {AbilityBehavior.PixelRemaster}: 3 seconds
+             """
+        );
+
+        IainukiDuration = config.Bind(
+             "Ability",
+             nameof(IainukiDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Iainuki command execute in:
+              - {AbilityBehavior.Original}: 2 seconds
+              - {AbilityBehavior.PixelRemaster}: 3 seconds
+             """
+        );
+
+        AimDuration = config.Bind(
+             "Ability",
+             nameof(AimDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Aim command execute in:
+              - {AbilityBehavior.Original}: 1/6 second
+              - {AbilityBehavior.PixelRemaster}: 1/2 second
+             """
+        );
+
+        CheckDuration = config.Bind(
+             "Ability",
+             nameof(CheckDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Check command execute in:
+              - {AbilityBehavior.Original}: 1/6 second
+              - {AbilityBehavior.PixelRemaster}: 1/2 second
+             """
+        );
+
+        ScanDuration = config.Bind(
+             "Ability",
+             nameof(ScanDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Scan command execute in:
+              - {AbilityBehavior.Original}: 1/6 second
+              - {AbilityBehavior.PixelRemaster}: 1/2 second
+             """
+        );
+
+        RecoverDuration = config.Bind(
+             "Ability",
+             nameof(RecoverDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Recover command execute in:
+              - {AbilityBehavior.Original}: 1/6 second
+              - {AbilityBehavior.PixelRemaster}: 1/2 second
+             """
+        );
+
+        ReviveDuration = config.Bind(
+             "Ability",
+             nameof(ReviveDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Revive command execute in:
+              - {AbilityBehavior.Original}: 1/6 second
+              - {AbilityBehavior.PixelRemaster}: 1/2 second
+             """
+        );
+
+        MimicDuration = config.Bind(
+             "Ability",
+             nameof(MimicDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Mimic command execute in:
+              - {AbilityBehavior.Original}: 1/6 second
+              - {AbilityBehavior.PixelRemaster}: 1/2 second
+             """
+        );
+
+        DelayAtTurnStart = config.Bind(
              "Delay Time",
              nameof(DelayAtTurnStart),
              true,
              "Pause the ATB for a short time at the start of a turn. In the original game the duration of this delay was the only thing the battle speed setting affected."
         );
 
-        VerySlowDelayTime = _config.Bind(
+        VerySlowDelayTime = config.Bind(
              "Delay Time",
              nameof(VerySlowDelayTime),
              4f,
              "Time to delay ATB in the command window when a player gets their turn when battle speed is set to Very Slow."
         );
 
-        SlowDelayTime = _config.Bind(
+        SlowDelayTime = config.Bind(
              "Delay Time",
              nameof(SlowDelayTime),
              2f,
              "Time to delay ATB in the command window when a player gets their turn when battle speed is set to Slow."
         );
 
-        NormalDelayTime = _config.Bind(
+        NormalDelayTime = config.Bind(
              "Delay Time",
              nameof(NormalDelayTime),
              1f,
              "Time to delay ATB in the command window when a player gets their turn when battle speed is set to Normal."
         );
 
-        FastDelayTime = _config.Bind(
+        FastDelayTime = config.Bind(
              "Delay Time",
              nameof(FastDelayTime),
              0.5f,
              "Time to delay ATB in the command window when a player gets their turn when battle speed is set to Fast."
         );
 
-        VeryFastDelayTime = _config.Bind(
+        VeryFastDelayTime = config.Bind(
              "Delay Time",
              nameof(VeryFastDelayTime),
              0.25f,
