@@ -207,16 +207,6 @@ namespace FF5PR.OriginalATB.Patches
             __instance.currentTime += (atbSpeed + atbSpeed) * Time.deltaTime * (__instance.BattleUnitData.timeMagnification - 1);
         }
 
-        [HarmonyPatch(typeof(SongConditionFunction), nameof(SongConditionFunction.Update))]
-        [HarmonyPostfix]
-        static void SongConditionFunctionUpdatePost(ref SongConditionFunction __instance)
-        {
-            if (__instance.currentTime == 0.0f)
-            {
-                Plugin.Log.LogInfo($"{__instance.BattleUnitData.GetUnitName()}: Ding!");
-            }
-        }
-
         [HarmonyPatch(typeof(BattleProgress), nameof(BattleProgress.GetChantingTime))]
         [HarmonyPostfix]
         static void OverrideAbilityWaitTimes(ref float __result, BattleActData battleActData)
