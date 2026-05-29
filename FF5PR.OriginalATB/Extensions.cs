@@ -23,7 +23,7 @@ namespace FF5PR.OriginalATB
         /// <summary>
         /// Accounts for realtime ATB filling differences between Original (0-128 and PR (0-100)
         /// </summary>
-        public const float ATBGuageRescalingFactor = 0.78125f;
+        public const float ATBGuageRescalingFactor = 100f / 127f;
 
         /// <summary>
         /// Calculate the minimum ATB value using the original FFV ATB formula rescaled to the new ATB system.
@@ -159,8 +159,8 @@ namespace FF5PR.OriginalATB
 
             return atbFormula switch
             {
-                ATBFormula.Original => remainingGuage / (BattleProgressATBFF0.UpdateFPSATB * BattlePlugManager.Instance().ATBSpeed),
-                ATBFormula.OriginalFillRate => remainingGuage / (BattleProgressATBFF0.UpdateFPSATB * BattlePlugManager.Instance().ATBSpeed * battleUnitData.timeMagnification),
+                ATBFormula.Original => remainingGuage / (BattleProgressATBFF0.UpdateFPSATB * BattlePlugManager.Instance().ATBSpeed * ATBGuageRescalingFactor),
+                ATBFormula.OriginalFillRate => remainingGuage / (BattleProgressATBFF0.UpdateFPSATB * BattlePlugManager.Instance().ATBSpeed * battleUnitData.timeMagnification * ATBGuageRescalingFactor),
                 ATBFormula.PixelRemaster => remainingGuage / battleUnitData.CalcATBFF0Coefficient(),
                 _ => 0.0f
             };
@@ -200,10 +200,19 @@ namespace FF5PR.OriginalATB
         public static void AdvanceToNextTurn(this BattleProgressATB battleProgressATB)
         {
             var atbFormula = Plugin.Config.ATBFormula.Value;
+            Plugin.Log.LogInfo($"ATBFormula: {atbFormula}");
             var guageStatusDictionary = battleProgressATB.gaugeStatusDictionary.ToManaged();
-            var minDeltaToNext = guageStatusDictionary.Min(x => x.CalcDeltaToNextTurn(atbFormula));
 
-            if(minDeltaToNext <= 0.0f)
+            var minDeltas = guageStatusDictionary.Select(x => (Unit: x.Key.GetUnitName(), DeltaToNext: x.CalcDeltaToNextTurn(atbFormula)) );
+            foreach (var (Unit, DeltaToNext) in minDeltas)
+            {
+                Plugin.Log.LogInfo($"{Unit}: DeltaToNextTurn: {DeltaToNext}");
+            }
+
+            var minDeltaToNext = guageStatusDictionary.Min(x => x.CalcDeltaToNextTurn(atbFormula));
+            Plugin.Log.LogInfo($"MinDeltaToNext: {minDeltaToNext}");
+
+            if (minDeltaToNext <= 0.0f)
             { 
                 return;
             }
@@ -212,6 +221,7 @@ namespace FF5PR.OriginalATB
             foreach ((var unitData, var guageValue) in battleProgressATB.gaugeStatusDictionary.ToManaged())
             {
                 var guageDelta = unitData.CalcATBForDelta(minDeltaToNext, atbFormula);
+                Plugin.Log.LogInfo($"{unitData.GetUnitName()}: Guage: {guageValue} + {guageDelta} = {guageValue + guageDelta}");
                 battleProgressATB.ChangeATBGaugeByUnitData(unitData, guageValue + guageDelta);
             }
 

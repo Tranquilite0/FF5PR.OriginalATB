@@ -27,7 +27,15 @@ public sealed class ModConfiguration(ConfigFile config)
     public ConfigEntry<bool> AdvanceFirstTurn;
     public ConfigEntry<bool> MonsterAgiVariance;
 
-    //Ability
+    //Delay
+    public ConfigEntry<bool> DelayAtTurnStart;
+    public ConfigEntry<float> VerySlowDelayTime;
+    public ConfigEntry<float> SlowDelayTime;
+    public ConfigEntry<float> NormalDelayTime;
+    public ConfigEntry<float> FastDelayTime;
+    public ConfigEntry<float> VeryFastDelayTime;
+
+    //Duration
     public ConfigEntry<bool> SingHasteSlow;
     public ConfigEntry<AbilityBehavior> SingDuration;
     public ConfigEntry<AbilityBehavior> JumpDuration;
@@ -39,14 +47,6 @@ public sealed class ModConfiguration(ConfigFile config)
     public ConfigEntry<AbilityBehavior> RecoverDuration;
     public ConfigEntry<AbilityBehavior> ReviveDuration;
     public ConfigEntry<AbilityBehavior> MimicDuration;
-
-    //Delay
-    public ConfigEntry<bool> DelayAtTurnStart;
-    public ConfigEntry<float> VerySlowDelayTime;
-    public ConfigEntry<float> SlowDelayTime;
-    public ConfigEntry<float> NormalDelayTime;
-    public ConfigEntry<float> FastDelayTime;
-    public ConfigEntry<float> VeryFastDelayTime;
 
     public void Init()
     {
@@ -74,123 +74,6 @@ public sealed class ModConfiguration(ConfigFile config)
              nameof(AdvanceFirstTurn),
              true,
              "Automatically Advance ATB at the start of battle to the first Unit's turn."
-        );
-
-        SingHasteSlow = config.Bind(
-             "Ability",
-             nameof(SingHasteSlow),
-             true,
-             "Patch the Bard's Sing command to use slow/haste status (like the original)."
-        );
-
-        SingDuration = config.Bind(
-             "Ability",
-             nameof(SingDuration),
-             AbilityBehavior.Original,
-             $"""
-             Have the Song command increase stats in _ intervals:
-              - {AbilityBehavior.Original}: 1 second
-              - {AbilityBehavior.PixelRemaster}: 1.5 second
-             """
-        );
-
-        JumpDuration = config.Bind(
-             "Ability",
-             nameof(JumpDuration),
-             AbilityBehavior.Original,
-             $"""
-             Have the Jump command execute in:
-              - {AbilityBehavior.Original}: 0.33 seconds (before jump) and 2.66 seconds (in air)
-              - {AbilityBehavior.PixelRemaster}: 3.5 seconds (in air)
-             """
-        );
-
-        FocusDuration = config.Bind(
-             "Ability",
-             nameof(FocusDuration),
-             AbilityBehavior.Original,
-             $"""
-             Have the Focus command execute in:
-              - {AbilityBehavior.Original}: 2 seconds
-              - {AbilityBehavior.PixelRemaster}: 3 seconds
-             """
-        );
-
-        IainukiDuration = config.Bind(
-             "Ability",
-             nameof(IainukiDuration),
-             AbilityBehavior.Original,
-             $"""
-             Have the Iainuki command execute in:
-              - {AbilityBehavior.Original}: 2 seconds
-              - {AbilityBehavior.PixelRemaster}: 3 seconds
-             """
-        );
-
-        AimDuration = config.Bind(
-             "Ability",
-             nameof(AimDuration),
-             AbilityBehavior.Original,
-             $"""
-             Have the Aim command execute in:
-              - {AbilityBehavior.Original}: 1/6 second
-              - {AbilityBehavior.PixelRemaster}: 1/2 second
-             """
-        );
-
-        CheckDuration = config.Bind(
-             "Ability",
-             nameof(CheckDuration),
-             AbilityBehavior.Original,
-             $"""
-             Have the Check command execute in:
-              - {AbilityBehavior.Original}: 1/6 second
-              - {AbilityBehavior.PixelRemaster}: 1/2 second
-             """
-        );
-
-        ScanDuration = config.Bind(
-             "Ability",
-             nameof(ScanDuration),
-             AbilityBehavior.Original,
-             $"""
-             Have the Scan command execute in:
-              - {AbilityBehavior.Original}: 1/6 second
-              - {AbilityBehavior.PixelRemaster}: 1/2 second
-             """
-        );
-
-        RecoverDuration = config.Bind(
-             "Ability",
-             nameof(RecoverDuration),
-             AbilityBehavior.Original,
-             $"""
-             Have the Recover command execute in:
-              - {AbilityBehavior.Original}: 1/6 second
-              - {AbilityBehavior.PixelRemaster}: 1/2 second
-             """
-        );
-
-        ReviveDuration = config.Bind(
-             "Ability",
-             nameof(ReviveDuration),
-             AbilityBehavior.Original,
-             $"""
-             Have the Revive command execute in:
-              - {AbilityBehavior.Original}: 1/6 second
-              - {AbilityBehavior.PixelRemaster}: 1/2 second
-             """
-        );
-
-        MimicDuration = config.Bind(
-             "Ability",
-             nameof(MimicDuration),
-             AbilityBehavior.Original,
-             $"""
-             Have the Mimic command execute in:
-              - {AbilityBehavior.Original}: 1/6 second
-              - {AbilityBehavior.PixelRemaster}: 1/2 second
-             """
         );
 
         DelayAtTurnStart = config.Bind(
@@ -235,5 +118,121 @@ public sealed class ModConfiguration(ConfigFile config)
              "Time to delay ATB in the command window when a player gets their turn when battle speed is set to Very Fast."
         );
 
+        SingHasteSlow = config.Bind(
+             "Duration",
+             nameof(SingHasteSlow),
+             true,
+             "Patch the Bard's Sing command to use slow/haste status (like the original)."
+        );
+
+        SingDuration = config.Bind(
+             "Duration",
+             nameof(SingDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Song command increase stats in _ intervals:
+              - {AbilityBehavior.Original}: 1 second
+              - {AbilityBehavior.PixelRemaster}: 1.5 second
+             """
+        );
+
+        JumpDuration = config.Bind(
+             "Duration",
+             nameof(JumpDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Jump command execute in:
+              - {AbilityBehavior.Original}: 0.33 seconds (before jump) and 2.66 seconds (in air)
+              - {AbilityBehavior.PixelRemaster}: 3.5 seconds (in air)
+             """
+        );
+
+        FocusDuration = config.Bind(
+             "Duration",
+             nameof(FocusDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Focus command execute in:
+              - {AbilityBehavior.Original}: 2 seconds
+              - {AbilityBehavior.PixelRemaster}: 3 seconds
+             """
+        );
+
+        IainukiDuration = config.Bind(
+             "Duration",
+             nameof(IainukiDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Iainuki command execute in:
+              - {AbilityBehavior.Original}: 2 seconds
+              - {AbilityBehavior.PixelRemaster}: 3 seconds
+             """
+        );
+
+        AimDuration = config.Bind(
+             "Duration",
+             nameof(AimDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Aim command execute in:
+              - {AbilityBehavior.Original}: 1/6 second
+              - {AbilityBehavior.PixelRemaster}: 1/2 second
+             """
+        );
+
+        CheckDuration = config.Bind(
+             "Duration",
+             nameof(CheckDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Check command execute in:
+              - {AbilityBehavior.Original}: 1/6 second
+              - {AbilityBehavior.PixelRemaster}: 1/2 second
+             """
+        );
+
+        ScanDuration = config.Bind(
+             "Duration",
+             nameof(ScanDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Scan command execute in:
+              - {AbilityBehavior.Original}: 1/6 second
+              - {AbilityBehavior.PixelRemaster}: 1/2 second
+             """
+        );
+
+        RecoverDuration = config.Bind(
+             "Duration",
+             nameof(RecoverDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Recover command execute in:
+              - {AbilityBehavior.Original}: 1/6 second
+              - {AbilityBehavior.PixelRemaster}: 1/2 second
+             """
+        );
+
+        ReviveDuration = config.Bind(
+             "Duration",
+             nameof(ReviveDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Revive command execute in:
+              - {AbilityBehavior.Original}: 1/6 second
+              - {AbilityBehavior.PixelRemaster}: 1/2 second
+             """
+        );
+
+        MimicDuration = config.Bind(
+             "Duration",
+             nameof(MimicDuration),
+             AbilityBehavior.Original,
+             $"""
+             Have the Mimic command execute in:
+              - {AbilityBehavior.Original}: 1/6 second
+              - {AbilityBehavior.PixelRemaster}: 1/2 second
+             """
+        );
     }
 }
