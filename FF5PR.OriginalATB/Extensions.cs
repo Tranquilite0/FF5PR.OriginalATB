@@ -218,37 +218,6 @@ namespace FF5PR.OriginalATB
         }
 
         /// <summary>
-        /// Determines how many "ATB-units" remain until the next turn.
-        /// Uses a simple calculation that optionally factors in a unit's timeMagnification.
-        /// </summary>
-        /// <param name="battleProgressATB"></param>
-        /// <param name="applyTimeMagnification"></param>
-        /// <returns></returns>
-        public static float CalcATBToNextTurn(this BattleProgressATB battleProgressATB, bool applyTimeMagnification)
-        {
-            var minAdvanceDelta = BattleProgressATB.MaxATBGauge;
-
-            foreach ((var unitData, var guageValue) in battleProgressATB.gaugeStatusDictionary)
-            {
-                var advanceDelta = BattleProgressATB.MaxATBGauge - guageValue;
-                if (applyTimeMagnification)
-                {
-                    advanceDelta /= unitData.timeMagnification;
-                }
-
-                minAdvanceDelta = Math.Min(advanceDelta, minAdvanceDelta);
-                if (minAdvanceDelta <= 0f)
-                {
-                    return 0f;
-                }
-            }
-
-            return minAdvanceDelta;
-        }
-
-
-
-        /// <summary>
         /// Fetches the Units name. Should work as long as <paramref name="unitData"/> has a non-null result for
         /// <see cref="BattleUnitData.GetOwnedCharacterData"/> or <see cref="BattleUnitData.GetMonster"/>.
         /// </summary>
