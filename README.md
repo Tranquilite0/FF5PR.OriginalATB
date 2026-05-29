@@ -18,7 +18,7 @@ This mod offers multiple options to mix and match ATB behaviors.
     - Grants a short period of time after a gets their turn to select an action.
     - Amount delayed is based on battle speed setting.
     - Happens in wait and active mode (also just like in the original).
-- Ability delay tweaks to make certain commands wait the same duration as the original:
+- Ability duration tweaks to make certain commands wait the same duration as the original:
     - Sing: 1.5 seconds/stat up -> 1 second (also with bugfix to apply haste/slow) 
     - Jump: 3.5 seconds -> 3 seconds
     - Focus and Iainuki: 3 seconds -> 2 seconds
