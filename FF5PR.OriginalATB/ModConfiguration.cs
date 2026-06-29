@@ -29,6 +29,7 @@ public sealed class ModConfiguration(ConfigFile config)
 
     //Delay
     public ConfigEntry<bool> DelayAtTurnStart;
+    public ConfigEntry<bool> SkipDelayWhileRunning;
     public ConfigEntry<float> VerySlowDelayTime;
     public ConfigEntry<float> SlowDelayTime;
     public ConfigEntry<float> NormalDelayTime;
@@ -81,6 +82,13 @@ public sealed class ModConfiguration(ConfigFile config)
              nameof(DelayAtTurnStart),
              true,
              "Pause the ATB for a short time at the start of a turn. In the original game the duration of this delay was the only thing the battle speed setting affected."
+        );
+
+        SkipDelayWhileRunning = config.Bind(
+             "Delay Time",
+             nameof(SkipDelayWhileRunning),
+             true,
+             "Pause the delay timer so that ATBs fill while trying to run. Makes it so you don't have to wait out the current delay timer before you can run."
         );
 
         VerySlowDelayTime = config.Bind(

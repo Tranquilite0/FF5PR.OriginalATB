@@ -48,6 +48,7 @@ public static class BattleATBDelayPatches
             || !BattleUtility.IsStagingEnd()
             || (SystemConfig.instance.ATBBattleType == ATBBattleType.Wait && BattleUIManager.instance.IsWaiting())
             || BattleUIManager.instance.IsForceWaiting()
+            || (Plugin.Config.SkipDelayWhileRunning.Value && BattleUIManager.instance.IsEscape())
             || !ModComponent.Instance.CurrentBattleDelayState.IsWaiting)
         {
             return true;
